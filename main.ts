@@ -193,16 +193,16 @@ function distance(pos1: number[], pos2: number[]) {
 function hack(hand, parsedHand) {
     // console.log(hand.direction[0],parsedHand.palm.facing.front, hand.fingers[1].extended,hand.fingers[2].extended);
     // return hand.direction[0] < - 0.2 && !parsedHand.palm.facing.front && (hand.fingers[1].extended || hand.fingers[2].extended);
-    console.log(hand.direction);
+    // console.log(hand.direction);
     // if (hand.direction[2] < -0.3) {
     //     console.log('going up');
     //     return false;
     // }
 
     if (hand.direction[0] <= -0.1) {
-        console.log('going left');
-        parsedHand.fingers[1].extended = true;
-        parsedHand.fingers[2].extended = true;
+        // console.log('going left');
+        // parsedHand.fingers[1].extended = true;
+        // parsedHand.fingers[2].extended = true;
         parsedHand.indexMiddleFingerSeparated = false;
         return true;
     }
@@ -267,13 +267,13 @@ function parseHand(hand, pointables) {
     // console.log(parsedHand.thumbTouchedMiddleFinger);
 
 
-    console.log(parsedHand.indexMiddleFingerSeparated);
+    // console.log(parsedHand.indexMiddleFingerSeparated);
 
     parsedHand.thumbAndIndexPinched = hand.pinchStrength > 0.95;
     // console.log(angle(indexFingerDirection, middleFingerDirection), hand.fingers[1].extended, hand.fingers[2].extended);
 
     parsedHand.semipinched = hand.pinchStrength > 0.5 && hand.pinchStrength < 1 && hand.grabStrength < 1;
-    console.log(hand.pinchStrength, hand.grabStrength, parsedHand.semipinched);
+    // console.log(hand.pinchStrength, hand.grabStrength, parsedHand.semipinched);
 
     /*
      if (pointables != null && pointables.length > 0) {
@@ -282,7 +282,7 @@ function parseHand(hand, pointables) {
      parsedHand.indexOverMiddle = false;
      }*/
 
-    parsedHand.indexOverMiddle = false;
+    parsedHand.indexOverMiddle = angle(hand.fingers[1],hand.fingers[2])<0.10;
 
     return parsedHand;
 }
