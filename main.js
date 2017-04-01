@@ -9,6 +9,7 @@ var Hand = (function () {
     function Hand() {
         this.orientation = { below: null };
         this.palm = { facing: { front: null } };
+        this.fingers = [new Finger(), new Finger(), new Finger()];
     }
     return Hand;
 }());
@@ -39,6 +40,13 @@ var ConditionNode = (function () {
     };
     return ConditionNode;
 }());
+function simon(hand, pointables) {
+    console.log(pointables[0].touchDistance);
+    if (hand.fingers[2].dipPosition[0] == pointables[0].touchZone || hand.fingers[2].carpPosition == pointables[0].touchZone ||
+        hand.fingers[2].mcpPosition == pointables[0].touchZone || hand.fingers[2].pipPosition == pointables[0].touchZone)
+        return true;
+    return false;
+}
 function conditionA(hand) {
     return hand.palm.facing.front;
 }
@@ -68,13 +76,13 @@ function conditionF(hand) {
     return hand.orientation.below;
 }
 function conditionG(hand) {
-    for (var i_3 = 0; i_3 <= 4; i_3++) {
-        for (var j_1 = 1; j_1 <= 2; j_1++) {
-            if (!hand.fingers[i_3].joints[j_1])
-                return false;
-        }
-    }
-    return true;
+    // for (let i = 0; i <= 4; i++) {
+    //     for (let j = 1; j <= 2; j++) {
+    //         if (!hand.fingers[i].joints[j]) return false;
+    //     }
+    // }
+    // return true;
+    return hand.semipinched;
 }
 function conditionH(hand) {
     return hand.fingers[0].extended;
@@ -137,7 +145,7 @@ controller.on('connect', function () {
         var frame = controller.frame();
         if (frame.hands.length > 0) {
             var hand = frame.hands[0];
-            var parsed = parseHand(hand);
+            var parsed = parseHand(hand, frame.pointables);
             // console.log(hand);
             console.log(analyze(parsed));
             //console.log(parsed.palm.facing);
@@ -149,10 +157,10 @@ function angle(dir1, dir2) {
     var mag2 = Math.sqrt(dir2[0] * dir2[0] + dir2[1] * dir2[1] + dir2[2] * dir2[2]);
     return Math.acos((dir1[0] * dir2[0] + dir1[1] * dir2[1] + dir1[2] * dir2[2]) / (mag1 * mag2));
 }
-function dis0tance(pos1, pos2) {
+function distance(pos1, pos2) {
     var result = 0;
-    for (var i_4 = 0; i_4 < 3; i_4++) {
-        var delta = pos1[i_4] - pos2[i_4];
+    for (var i_3 = 0; i_3 < 3; i_3++) {
+        var delta = pos1[i_3] - pos2[i_3];
         result += delta * delta;
     }
     return Math.sqrt(result);
@@ -160,51 +168,74 @@ function dis0tance(pos1, pos2) {
 function hack(hand, parsedHand) {
     // console.log(hand.direction[0],parsedHand.palm.facing.front, hand.fingers[1].extended,hand.fingers[2].extended);
     // return hand.direction[0] < - 0.2 && !parsedHand.palm.facing.front && (hand.fingers[1].extended || hand.fingers[2].extended);
-    // console.log(hand.direction);
-    if (hand.direction[1] > 0.1) {
-        // console.log('going up');
-        // idem hore
-        return false;
-    }
-    if (hand.direction[0] <= -0.2) {
+    console.log(hand.direction);
+    // if (hand.direction[2] < -0.3) {
+    //     console.log('going up');
+    //     return false;
+    // }
+    if (hand.direction[0] <= -0.1) {
+        console.log('going left');
         parsedHand.fingers[1].extended = true;
         parsedHand.fingers[2].extended = true;
+        parsedHand.indexMiddleFingerSeparated = false;
         return true;
     }
 }
-function parseHand(hand) {
+function touching(finger1, finger2) {
+    function close(pos1, pos2) {
+        return distance(pos1, pos2) < 50;
+    }
+    for (var b_1 = 0; b_1 < finger1.bones.length; b_1++) {
+        for (var t = 0; t < 10; t++) {
+            var pos = [];
+            finger1.bones[b_1].lerp(pos, t / 10);
+            if (close(pos, finger2.distal.center())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+function touchingComplete(finger1, finger2) {
+    return touching(finger1, finger2) || touching(finger2, finger1);
+}
+function parseHand(hand, pointables) {
     //console.log(hand);
     var parsedHand = new Hand();
     parsedHand.palm.facing.front = hand.palmNormal[1] < 0;
     //console.log(parsedHand.palm.facing.front);
     parsedHand.orientation.below = hand.arm.basis[2][0] < 0;
     //console.log(parsedHand.orientation);
-    parsedHand.fingers = [];
-    hand.fingers.forEach(function (finger) {
-        var tmp = new Finger();
-        tmp.extended = finger.extended;
-        for (var i_5 = 0; i_5 < 4; i_5++) {
-            tmp.joints.push(finger.extended);
-        }
-        parsedHand.fingers.push(tmp);
-    });
     // console.log(hand.fingers);
     // if(hand.fingers[1].extended && hand.fingers[2].extended) {
     var indexFingerDirection = hand.fingers[1].direction;
     var middleFingerDirection = hand.fingers[2].direction;
+    parsedHand.indexMiddleFingerSeparated = angle(indexFingerDirection, middleFingerDirection) > 0.2;
+    hack(hand, parsedHand);
+    parsedHand.fingers = [];
+    hand.fingers.forEach(function (finger) {
+        var tmp = new Finger();
+        tmp.extended = finger.extended;
+        for (var i_4 = 0; i_4 < 4; i_4++) {
+            tmp.joints.push(finger.extended);
+        }
+        parsedHand.fingers.push(tmp);
+    });
     // console.log(hand.fingers[1]);
-    parsedHand.indexMiddleFingerSeparated = hack(hand, parsedHand) ? true : angle(indexFingerDirection, middleFingerDirection) > 0.2;
-    // console.log(parsedHand.indexMiddleFingerSeparated);
+    parsedHand.thumbTouchedMiddleFinger = touchingComplete(hand.fingers[0], hand.fingers[2]);
+    // console.log(parsedHand.thumbTouchedMiddleFinger);
+    console.log(parsedHand.indexMiddleFingerSeparated);
     parsedHand.thumbAndIndexPinched = hand.pinchStrength > 0.95;
     // console.log(angle(indexFingerDirection, middleFingerDirection), hand.fingers[1].extended, hand.fingers[2].extended);
-    parsedHand.indexOverMiddle = function (hand) {
-        if (hand.fpointables.length > 0) {
-            var touchZone = frame.pointables[0].touchZone;
-            zoneDisplay.innerText = touchZone;
-        }
-    };
-    //parsedHand.indexOverMiddle = angle(hand.fingers[1].direction,hand.fingers[2].direction)>0.18;
-    parsedHand.thumbTouchedMiddleFinger = angle(hand.fingers[0].direction, hand.fingers[2].direction) < 0.2;
+    parsedHand.semipinched = hand.pinchStrength > 0.5 && hand.pinchStrength < 1 && hand.grabStrength < 1;
+    console.log(hand.pinchStrength, hand.grabStrength, parsedHand.semipinched);
+    /*
+     if (pointables != null && pointables.length > 0) {
+     parsedHand.indexOverMiddle = simon(hand, pointables);
+     } else {
+     parsedHand.indexOverMiddle = false;
+     }*/
+    parsedHand.indexOverMiddle = false;
     return parsedHand;
 }
 controller.connect();
