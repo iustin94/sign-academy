@@ -9,17 +9,18 @@ class Hand {
     orientation: { below: boolean }={below:null};
     palm: { facing: { front: boolean} }={facing:{front:null}};
     fingers: Finger[];
-    fingersSeparated: { index: boolean, middle: boolean }
+    indexMiddleFingerSeparated: boolean;
 }
 
 class ConditionNode
 {
     constructor(public yes:ConditionNode|string,
+
                 public no: ConditionNode|string,
                 public condition:(Hand)=>boolean){}
 
     handle(hand:Hand):string{
-        console.log((this.condition as any).name);
+        // console.log((this.condition as any).name);
         if(this.condition(hand)){
             if(this.yes instanceof ConditionNode){
                 return this.yes.handle(hand);
@@ -97,7 +98,7 @@ function conditionL(hand: Hand): boolean{
 }
 
 function conditionM(hand: Hand): boolean{
-    return hand.fingersSeparated.middle && hand.fingersSeparated.index;
+    return hand.indexMiddleFingerSeparated;
 }
 
 function conditionN(hand: Hand): boolean{
@@ -200,10 +201,14 @@ controller.on('connect', () => {
             let parsed = parseHand(hand);
             console.log(parsed,analyze(parsed));
         }
-    }, 1000);
-
+    }, 200);
 });
 
+function dot(dir1:number[], dir2:number[]){
+    let mag1 = Math.sqrt(dir1[0]*dir1[0]+dir1[1]*dir1[1]+dir1[2]*dir1[2]);
+    let mag2 = Math.sqrt(dir2[0]*dir2[0]+dir2[1]*dir2[1]+dir2[2]*dir2[2]);
+    return Math.acos((dir1[0]*dir2[0]+dir1[1]*dir2[1]+dir1[2]*dir2[2])/(mag1*mag2));
+}
 
 function parseHand(hand){
     //console.log(hand);
@@ -226,7 +231,15 @@ function parseHand(hand){
         parsedHand.fingers.push(tmp);
     });
 
-    // parsedHand.fingersSeparated
+    // console.log(hand.fingers);
+    const indexFingerDirection = hand.fingers[1].metacarpal.direction();
+    const middleFingerDirection = hand.fingers[2].metacarpal.direction();
+
+    // const angle = indexFingerDirection.angleTo(middleFingerDirection);
+    console.log(indexFingerDirection, middleFingerDirection);
+    console.log(dot(indexFingerDirection, middleFingerDirection));
+    // parsedHand.indexMiddleFingerSeparated = hand.fingers[1].direction[0] >= 0.10 + hand.fingers[2].direction[0];
+    // console.log(hand.fingers);
 
     return parsedHand;
 }
