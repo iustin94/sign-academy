@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-///<reference path="models/hand.ts"/>
 var controllerOptions = {};
 var Finger = (function () {
     function Finger() {
@@ -8,7 +5,6 @@ var Finger = (function () {
     }
     return Finger;
 }());
-;
 var Hand = (function () {
     function Hand() {
         this.orientation = { below: null };
@@ -16,7 +12,6 @@ var Hand = (function () {
     }
     return Hand;
 }());
-;
 var ConditionNode = (function () {
     function ConditionNode(yes, no, condition) {
         this.yes = yes;
@@ -72,7 +67,7 @@ function conditionF(hand) {
 function conditionG(hand) {
     for (var i_2 = 0; i_2 <= 4; i_2++) {
         for (var j_1 = 1; j_1 <= 2; j_1++) {
-            if (!hand.fingers[i_2].joints[j_1].bend)
+            if (!hand.fingers[i_2].joints[j_1])
                 return false;
         }
     }
@@ -133,44 +128,44 @@ var g = new ConditionNode(d, j, conditionG);
 function analyze(hand) {
     return g.handle(hand);
 }
-exports.analyze = analyze;
-console.log(analyze({
-    orientation: { below: false },
-    fingers: [
-        { extended: true, joints: [
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true }
-            ] },
-        { extended: true, joints: [
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true }
-            ] },
-        { extended: true, joints: [
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true }
-            ] },
-        { extended: true, joints: [
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true }
-            ] },
-        { extended: true, joints: [
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true },
-                { name: '', bend: true }
-            ] }
-    ],
-    fingersSeparated: { index: true, middle: true },
-    palm: { facing: { front: false } }
-}));
+//
+// console.log(analyze({
+//     orientation:{below:false},
+//     fingers:[
+//         {extended:true,joints:[
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true}
+//         ]},
+//         {extended:true,joints:[
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true}
+//         ]},
+//         {extended:true,joints:[
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true}
+//         ]},
+//         {extended:true,joints:[
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true}
+//         ]},
+//         {extended:true,joints:[
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true},
+//             {name:'', bend:true}
+//         ]}
+//     ],
+//     fingersSeparated:{index:true, middle:true},
+//     palm:{facing:{front:false}}
+// }));
 /*
 Leap.loop(controllerOptions, frame => {
     // Body of callback function
@@ -186,7 +181,7 @@ controller.on('connect', function () {
         if (frame.hands.length > 0) {
             var hand = frame.hands[0];
             var parsed = parseHand(hand);
-            console.log(analyze(parsed));
+            console.log(parsed, analyze(parsed));
         }
     }, 1000);
 });
@@ -195,7 +190,7 @@ function parseHand(hand) {
     var parsedHand = new Hand();
     parsedHand.palm.facing.front = hand.arm.basis[0][0] > 0.5;
     //console.log(parsedHand.palm.facing.front);
-    parsedHand.orientation.below = hand.arm.basis[2][0] > 0;
+    parsedHand.orientation.below = hand.arm.basis[2][0] < 0;
     //console.log(parsedHand.orientation);
     parsedHand.fingers = [];
     hand.fingers.forEach(function (finger) {
@@ -206,6 +201,7 @@ function parseHand(hand) {
         }
         parsedHand.fingers.push(tmp);
     });
+    // parsedHand.fingersSeparated
     return parsedHand;
 }
 controller.connect();
