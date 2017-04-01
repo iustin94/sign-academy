@@ -6,5 +6,10 @@
   },
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "files": [
+    "global.d.ts",
+    "main.ts"
+  ],
+  "outFile":"bundle.js"
 }
