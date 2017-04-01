@@ -201,6 +201,7 @@ function hack(hand, parsedHand) {
 
     if (hand.direction[0] <= -0.1) {
         // console.log('going left');
+
         // parsedHand.fingers[1].extended = true;
         // parsedHand.fingers[2].extended = true;
         parsedHand.indexMiddleFingerSeparated = false;
