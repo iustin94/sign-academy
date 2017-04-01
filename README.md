@@ -1,6 +1,8 @@
 # sign-academy
-Sign language recognition using leap motion controller using decision tree model. This hack is made during #AUHack2017
+Sign language alphabet intepreter.
 
-After hours of brainstorming, to be exact 16h, our team decided to use Leap motion to build a library for recognition of sign language alphabet.
-We started with a short research we did not found an open source library for recognition of sign alphabet. Next step was trying to find if it is feasible. We stumble on this paper(http://worldcomp-proceedings.com/proc/p2015/PDP7080.pdf). We implemented the idea of using decimation tree described in the paper. If there is a future development it can use machine learning instead of decision tree. We are close to the paper KPI %.
-We build an UI for learning sign language using Leap motion. There are many other potential usedcases for this library.
+This is a JavaScript framework that uses the Libmotion camera to interpret hand signs into sign language alphabet.The project was developed as our team's entry for the #AUHack2017 event. The framework uses the raw data provided by the camera and inteprets the vector data into specific conditions that need to be fullfilled to obtain a specific letter.
+
+For determining the letter simbol we have used the publication of Makiko Funasaka, Yu Ishikawa, Masami Takata, and Kazuki Joe [Sign Language Recognition using Leap Motion Controller]{http://worldcomp-proceedings.com/proc/p2015/PDP7080.pdf).
+
+To demonstrate the functionality the project has a simple Web UI that tests your ability to spel sign alphabet.
