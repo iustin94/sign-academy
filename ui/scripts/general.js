@@ -5,6 +5,7 @@ function updateUI(result) {
 
 $( document ).ready(function() {
 
+	var letters = ['A', 'Y', 'B', 'W', 'L', 'D', 'I', 'F', 'X', 'V', 'U'];
 	var shownLetters = [];
 
 	var questionNumber = 0;
@@ -46,6 +47,11 @@ $( document ).ready(function() {
 	    }
 	});
 
+	function play(letter){
+		const audio = new Audio('/ui/Audio/'+letter+'.mp3');
+		audio.play();
+	}
+
 	function resetRectangle() {
 		length = letterBorder.getTotalLength();
 		letterBorder.style.transition = letterBorder.style.WebkitTransition =
@@ -76,15 +82,9 @@ $( document ).ready(function() {
 	}
 
 	function nextQuestion() {
-
-		var characters = [];
-		for(var i=65; i<90; i++){
-			characters.push(String.fromCharCode(i));
-		}
-		console.log(characters[questionNumber],questionNumber);
-		showQuestion('Please show letter ' + characters[questionNumber], characters[questionNumber]);
+//		console.log(characters[questionNumber],questionNumber);
+		showQuestion('Please show letter ' + letters[questionNumber], letters[questionNumber]);
 		questionNumber++;
-
 	}
 
 	$('.letter-box').click(function() {
@@ -116,6 +116,7 @@ $( document ).ready(function() {
 			TweenMax.to(letterBorder, 0.5, {fill: "#66BB6A"});
 			TweenMax.to(letterText, 0.5, {fill: "#fff"});
 			$('.question').html('Awesome, you showed letter ' + currentLetter + '!');
+			play(currentLetter);
 
 			TweenMax.to([letterText, letterBorder], 2, {opacity: 0, onComplete: function() {
 
