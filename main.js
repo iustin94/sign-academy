@@ -9,6 +9,7 @@ var Hand = (function () {
     function Hand() {
         this.orientation = { below: null };
         this.palm = { facing: { front: null } };
+        this.fingers = [new Finger(), new Finger(), new Finger()];
     }
     return Hand;
 }());
@@ -19,7 +20,7 @@ var ConditionNode = (function () {
         this.condition = condition;
     }
     ConditionNode.prototype.handle = function (hand) {
-        //console.log((this.condition as any).name);
+        // console.log((this.condition as any).name);
         if (this.condition(hand)) {
             if (this.yes instanceof ConditionNode) {
                 return this.yes.handle(hand);
@@ -39,6 +40,13 @@ var ConditionNode = (function () {
     };
     return ConditionNode;
 }());
+function simon(hand, pointables) {
+    console.log(pointables[0].touchDistance);
+    if (hand.fingers[2].dipPosition[0] == pointables[0].touchZone || hand.fingers[2].carpPosition == pointables[0].touchZone ||
+        hand.fingers[2].mcpPosition == pointables[0].touchZone || hand.fingers[2].pipPosition == pointables[0].touchZone)
+        return true;
+    return false;
+}
 function conditionA(hand) {
     return hand.palm.facing.front;
 }
@@ -46,12 +54,15 @@ function conditionB(hand) {
     return !hand.orientation.below;
 }
 function conditionC(hand) {
-    // TODO
+    for (var i_1 = 0; i_1 < 5; i_1++) {
+        if (!hand.fingers[i_1].extended)
+            return true;
+    }
     return false;
 }
 function conditionD(hand) {
-    for (var i_1 = 1; i_1 <= 4; i_1++) {
-        if (!hand.fingers[i_1].extended)
+    for (var i_2 = 1; i_2 <= 4; i_2++) {
+        if (!hand.fingers[i_2].extended)
             return false;
     }
     if (hand.fingers[0].extended)
@@ -65,13 +76,13 @@ function conditionF(hand) {
     return hand.orientation.below;
 }
 function conditionG(hand) {
-    for (var i_2 = 0; i_2 <= 4; i_2++) {
-        for (var j_1 = 1; j_1 <= 2; j_1++) {
-            if (!hand.fingers[i_2].joints[j_1])
-                return false;
-        }
-    }
-    return true;
+    // for (let i = 0; i <= 4; i++) {
+    //     for (let j = 1; j <= 2; j++) {
+    //         if (!hand.fingers[i].joints[j]) return false;
+    //     }
+    // }
+    // return true;
+    return hand.semipinched;
 }
 function conditionH(hand) {
     return hand.fingers[0].extended;
@@ -89,18 +100,16 @@ function conditionL(hand) {
     return hand.fingers[4].extended;
 }
 function conditionM(hand) {
-    return hand.fingersSeparated.middle && hand.fingersSeparated.index;
+    return hand.thumbTouchedMiddleFinger;
 }
 function conditionN(hand) {
-    // TODO
-    // return hand.
-    return false;
+    return hand.indexOverMiddle;
 }
 function conditionO(hand) {
-    return hand.fingers[1].extended && hand.fingers[2].extended;
+    return hand.indexMiddleFingerSeparated;
 }
 function conditionP(hand) {
-    return hand.fingers[0].extended && hand.fingers[1].extended;
+    return !hand.thumbAndIndexPinched;
 }
 var m = new ConditionNode('K', 'U', conditionM);
 var b = new ConditionNode(m, 'H', conditionB);
@@ -126,88 +135,108 @@ var a = new ConditionNode(c, 'X', conditionA);
 var d = new ConditionNode('E', a, conditionD);
 var g = new ConditionNode(d, j, conditionG);
 function analyze(hand) {
-    var result = g.handle(hand);
-    window.updateUI(result);
-    return result;
+    return g.handle(hand);
 }
-//
-// console.log(analyze({
-//     orientation:{below:false},
-//     fingers:[
-//         {extended:true,joints:[
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true}
-//         ]},
-//         {extended:true,joints:[
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true}
-//         ]},
-//         {extended:true,joints:[
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true}
-//         ]},
-//         {extended:true,joints:[
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true}
-//         ]},
-//         {extended:true,joints:[
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true},
-//             {name:'', bend:true}
-//         ]}
-//     ],
-//     fingersSeparated:{index:true, middle:true},
-//     palm:{facing:{front:false}}
-// }));
-/*
-Leap.loop(controllerOptions, frame => {
-    // Body of callback function
-
-    setInterval(()=>{console.log(frame)},50000);
-});
-*/
-function checkLibrary() { }
+function checkLibrary() {
+}
 var controller = new Leap.Controller();
 controller.on('connect', function () {
     setInterval(function () {
         var frame = controller.frame();
         if (frame.hands.length > 0) {
             var hand = frame.hands[0];
-            var parsed = parseHand(hand);
-            // console.log(parsed,analyze(parsed));
-            var result = analyze(parsed);
-            window.updateUI(result);
+            var parsed = parseHand(hand, frame.pointables);
+            // console.log(hand);
+            console.log(analyze(parsed));
+            //console.log(parsed.palm.facing);
         }
     }, 1000);
 });
-function parseHand(hand) {
+function angle(dir1, dir2) {
+    var mag1 = Math.sqrt(dir1[0] * dir1[0] + dir1[1] * dir1[1] + dir1[2] * dir1[2]);
+    var mag2 = Math.sqrt(dir2[0] * dir2[0] + dir2[1] * dir2[1] + dir2[2] * dir2[2]);
+    return Math.acos((dir1[0] * dir2[0] + dir1[1] * dir2[1] + dir1[2] * dir2[2]) / (mag1 * mag2));
+}
+function distance(pos1, pos2) {
+    var result = 0;
+    for (var i_3 = 0; i_3 < 3; i_3++) {
+        var delta = pos1[i_3] - pos2[i_3];
+        result += delta * delta;
+    }
+    return Math.sqrt(result);
+}
+function hack(hand, parsedHand) {
+    // console.log(hand.direction[0],parsedHand.palm.facing.front, hand.fingers[1].extended,hand.fingers[2].extended);
+    // return hand.direction[0] < - 0.2 && !parsedHand.palm.facing.front && (hand.fingers[1].extended || hand.fingers[2].extended);
+    // console.log(hand.direction);
+    // if (hand.direction[2] < -0.3) {
+    //     console.log('going up');
+    //     return false;
+    // }
+    if (hand.direction[0] <= -0.1) {
+        // console.log('going left');
+        // parsedHand.fingers[1].extended = true;
+        // parsedHand.fingers[2].extended = true;
+        parsedHand.indexMiddleFingerSeparated = false;
+        return true;
+    }
+}
+function touching(finger1, finger2) {
+    function close(pos1, pos2) {
+        return distance(pos1, pos2) < 50;
+    }
+    for (var b_1 = 0; b_1 < finger1.bones.length; b_1++) {
+        for (var t = 0; t < 10; t++) {
+            var pos = [];
+            finger1.bones[b_1].lerp(pos, t / 10);
+            if (close(pos, finger2.distal.center())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+function touchingComplete(finger1, finger2) {
+    return touching(finger1, finger2) || touching(finger2, finger1);
+}
+function parseHand(hand, pointables) {
     //console.log(hand);
     var parsedHand = new Hand();
-    parsedHand.palm.facing.front = hand.arm.basis[0][0] > 0.5;
+    parsedHand.palm.facing.front = hand.palmNormal[1] < 0;
     //console.log(parsedHand.palm.facing.front);
     parsedHand.orientation.below = hand.arm.basis[2][0] < 0;
     //console.log(parsedHand.orientation);
+    // console.log(hand.fingers);
+    // if(hand.fingers[1].extended && hand.fingers[2].extended) {
+    var indexFingerDirection = hand.fingers[1].direction;
+    var middleFingerDirection = hand.fingers[2].direction;
+    parsedHand.indexMiddleFingerSeparated = angle(indexFingerDirection, middleFingerDirection) > 0.2;
+    hack(hand, parsedHand);
     parsedHand.fingers = [];
     hand.fingers.forEach(function (finger) {
         var tmp = new Finger();
         tmp.extended = finger.extended;
-        for (var i_3 = 0; i_3 < 4; i_3++) {
+        for (var i_4 = 0; i_4 < 4; i_4++) {
             tmp.joints.push(finger.extended);
         }
         parsedHand.fingers.push(tmp);
     });
-    // parsedHand.fingersSeparated
+    // console.log(hand.fingers[1]);
+    parsedHand.thumbTouchedMiddleFinger = touchingComplete(hand.fingers[0], hand.fingers[2]);
+    // console.log(parsedHand.thumbTouchedMiddleFinger);
+    // console.log(parsedHand.indexMiddleFingerSeparated);
+    parsedHand.thumbAndIndexPinched = hand.pinchStrength > 0.95;
+    // console.log(angle(indexFingerDirection, middleFingerDirection), hand.fingers[1].extended, hand.fingers[2].extended);
+    parsedHand.semipinched = hand.pinchStrength > 0.5 && hand.pinchStrength < 1 && hand.grabStrength < 1;
+    // console.log(hand.pinchStrength, hand.grabStrength, parsedHand.semipinched);
+    /*
+     if (pointables != null && pointables.length > 0) {
+     parsedHand.indexOverMiddle = simon(hand, pointables);
+     } else {
+     parsedHand.indexOverMiddle = false;
+     }*/
+    parsedHand.indexOverMiddle = angle(hand.fingers[1], hand.fingers[2]) < 0.10;
     return parsedHand;
 }
 controller.connect();
-console.log('PLEB init');
 //# sourceMappingURL=main.js.map
