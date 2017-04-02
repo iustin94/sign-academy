@@ -1,3 +1,8 @@
+function updateUI(result) {
+	console.log("FROM PRETTY UI: " + result);
+	window.setValue(result);
+}
+
 $( document ).ready(function() {
 
 	var shownLetters = [];
@@ -17,7 +22,7 @@ $( document ).ready(function() {
 		swal({
 		  title: "That's how you show " + currentLetter,
 		  confirmButtonText: "Thanks!",
-			imageUrl: "images/" + currentLetter + ".png",
+			imageUrl: "ui/images/" + currentLetter + ".png",
 			imageSize: "180x180"
 		});
 	});
@@ -131,4 +136,21 @@ $( document ).ready(function() {
 			}});
 		}});
 	}
+
+	function setValue(value){
+		value = currentLetter===value;
+		value *= 100;
+		if(value < 30){
+			moveTo40();
+		}else if(value < 60){
+			moveTo60();
+		}else if(value < 80){
+			moveTo80();
+		}else{
+			moveTo100();
+		}
+	}
+
+	window.setValue = setValue;
+
 });

@@ -19,7 +19,7 @@ var ConditionNode = (function () {
         this.condition = condition;
     }
     ConditionNode.prototype.handle = function (hand) {
-        console.log(this.condition.name);
+        //console.log((this.condition as any).name);
         if (this.condition(hand)) {
             if (this.yes instanceof ConditionNode) {
                 return this.yes.handle(hand);
@@ -126,7 +126,9 @@ var a = new ConditionNode(c, 'X', conditionA);
 var d = new ConditionNode('E', a, conditionD);
 var g = new ConditionNode(d, j, conditionG);
 function analyze(hand) {
-    return g.handle(hand);
+    var result = g.handle(hand);
+    window.updateUI(result);
+    return result;
 }
 //
 // console.log(analyze({
@@ -181,7 +183,9 @@ controller.on('connect', function () {
         if (frame.hands.length > 0) {
             var hand = frame.hands[0];
             var parsed = parseHand(hand);
-            console.log(parsed, analyze(parsed));
+            // console.log(parsed,analyze(parsed));
+            var result = analyze(parsed);
+            window.updateUI(result);
         }
     }, 1000);
 });
@@ -205,4 +209,5 @@ function parseHand(hand) {
     return parsedHand;
 }
 controller.connect();
+console.log('PLEB init');
 //# sourceMappingURL=main.js.map

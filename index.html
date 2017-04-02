@@ -1,26 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Sign</title>
     <script src="node_modules/leapjs/leap-0.6.4.js"></script>
+    <link rel="stylesheet" href="ui/style/normalize.css" />
+    <link rel="stylesheet" href="ui/style/owl.carousel.min.css" />
+    <link rel="stylesheet" href="ui/style/owl.theme.default.min.css" />
+    <link rel="stylesheet" href="ui/style/sweetalert.css" />
+    <link rel="stylesheet" href="ui/style/general.css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
 </head>
-<body onload="checkLibrary()">
-<h1>Leap JavaScript Sample</h1>
-<div id="main">
-    <h3>Frame data:</h3>
-    <div id="frameData"></div>
-    <div style="clear:both;"></div>
-    <h3>Hand data:</h3>
-    <div id="handData"></div>
-    <div style="clear:both;"></div>
-    <h3>Finger data:</h3>
-    <div id="pointableData"></div>
-    <div style="clear:both;"></div>
+
+<body>
+
+<div class="content">
+    <div class="question-container">
+        <p class="question"></p>
+
+        <div class="letter-box">
+            <svg width="415" height="350" version="1.1" xmlns="http://www.w3.org/2000/svg">
+
+                <rect id="letter-border" x="60" y="10" rx="35" ry="35" width="300" height="300" stroke="black" fill="transparent" stroke-width="1"/>
+                <text id="letter-text" x="50%" y="63%" text-anchor="middle" font-weight: bold font-family="Lato" font-size="165" fill="#000"></text>
+
+            </svg>
+        </div>
+    </div>
 </div>
-<!--<script src="node_modules/commonjs/lib/system.js"></script>-->
-<!--<script src="models/finger.js"></script>-->
-<!--<script src="models/hands.js"></script>-->
-<script src="main.js"></script>
+
+<div class="how-bar">
+    <span id="how-button">How do I show that?</span>
+</div>
+
+<div class="owl-carousel owl-theme nav-letters">
+</div>
+
+
+<script src="main.js"></script> <!--  Pleb library -->
+<script type="text/javascript" src="ui/scripts/jquery-3.2.0.min.js"></script>
+<script type="text/javascript" src="ui/scripts/TweenMax.min.js"></script>
+<script type="text/javascript" src="ui/scripts/owl.carousel.min.js"></script>
+<script type="text/javascript" src="ui/scripts/sweetalert.min.js"></script>
+<script type="text/javascript" src="ui/scripts/general.js"></script>
 </body>
+
 </html>
