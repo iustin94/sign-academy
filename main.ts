@@ -19,7 +19,7 @@ class ConditionNode
                 public condition:(Hand)=>boolean){}
 
     handle(hand:Hand):string{
-        console.log((this.condition as any).name);
+        //console.log((this.condition as any).name);
         if(this.condition(hand)){
             if(this.yes instanceof ConditionNode){
                 return this.yes.handle(hand);
@@ -138,8 +138,10 @@ const a = new ConditionNode(c, 'X', conditionA);
 const d = new ConditionNode('E', a, conditionD);
 const g = new ConditionNode(d, j, conditionG);
 
-function analyze(hand:Hand){
-    return g.handle(hand);
+function analyze(hand:Hand) {
+    let result = g.handle(hand);
+    (window as any).updateUI(result);
+    return result;
 }
 //
 // console.log(analyze({
@@ -198,7 +200,9 @@ controller.on('connect', () => {
         if(frame.hands.length > 0){
             let hand = frame.hands[0];
             let parsed = parseHand(hand);
-            console.log(parsed,analyze(parsed));
+            // console.log(parsed,analyze(parsed));
+            let result = analyze(parsed);
+            (window as any).updateUI(result);
         }
     }, 1000);
 
@@ -231,3 +235,4 @@ function parseHand(hand){
     return parsedHand;
 }
 controller.connect();
+console.log('PLEB init');
