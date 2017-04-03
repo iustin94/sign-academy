@@ -7,6 +7,8 @@ For determining the letter symbol we have used the publication of Makiko Funasak
 
 To demonstrate the functionality the project has a simple Web UI that tests your ability to spell sign alphabet.
 
+Devpost: link(https://devpost.com/software/sign-academy)
+
 Correct:
 ![alt text](https://github.com/sbozhilov/sign-academy/blob/master/info/Correct.jpg "Correct")
 
